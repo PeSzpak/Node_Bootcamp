@@ -4,23 +4,32 @@ const UserModel = require("../src/models/user.model");
 const app = express();
 app.use(express.json());
 
-app.get("/home", (req, res) => {
-  res.contentType("text/html");
-  res.status(200).send("<h1>Salve a todos que estão vendo</h1>");
+app.use((req, res, next) => {
+  console.log(`Request Type: ${req.method}`)
+  console.log(`Content Type: ${req.headers["content-Type"]}`)
+  console.log(`Date: ${new Date()}`)
+  next()
+})
+app.get("/users", async (req, res) => {
+  try {
+    const users = await UserModel.find({});
+    return res.status(200).json(users);
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
 });
-app.get("/users", (req, res) => {
-  const users = [
-    {
-      name: "Pedro Szpak",
-      email: "pedrohszpaka@gmail.com",
-    },
-    {
-      name: "Isabelle Santos",
-      email: "cruzbell@gmail.com",
-    },
-  ];
-  res.status(200).json(users);
+
+
+app.get("/users/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const user = await UserModel.findById(id);
+    return res.status(200).json(user);
+  } catch (error) {
+    return res.status(404).send(error.message);
+  }
 });
+
 
 app.post("/users", async (req, res) => {
   try {
@@ -32,6 +41,26 @@ app.post("/users", async (req, res) => {
   }
 });
 
-const port = 8081;
 
-app.listen(port, () => console.log(`Express rodando na porta ${port}`));
+app.patch("/users/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const user = await UserModel.findByIdAndUpdate(id, req.body, { new: true });
+    res.status(200).json(user);
+  } catch (error) {
+    return res.status(500).send(error.message);
+  }
+});
+
+app.delete("/users/:id", async (req, res) => {
+  try{
+    const id = req.params.id
+    const user = await UserModel.findByIdAndDelete(id)
+    return res.status(202).json(user)
+    
+  }catch {
+    return res.status(500).send(error.message)
+  }
+})
+
+app.listen(process.env.PORT, () => console.log(`Express rodando na porta ${process.env.PORT}`));

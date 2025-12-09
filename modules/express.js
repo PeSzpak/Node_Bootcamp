@@ -4,12 +4,21 @@ const UserModel = require("../src/models/user.model");
 const app = express();
 app.use(express.json());
 
+app.set("view engine", "ejs");
+app.set("views", "./src/views");
+
 app.use((req, res, next) => {
-  console.log(`Request Type: ${req.method}`)
-  console.log(`Content Type: ${req.headers["content-Type"]}`)
-  console.log(`Date: ${new Date()}`)
-  next()
-})
+  console.log(`Request Type: ${req.method}`);
+  console.log(`Content Type: ${req.headers["content-Type"]}`);
+  console.log(`Date: ${new Date()}`);
+  next();
+});
+
+app.get("/views/users", async (req, res) => {
+  const users = await UserModel.find({})
+  res.render("index", {users});
+});
+
 app.get("/users", async (req, res) => {
   try {
     const users = await UserModel.find({});
@@ -18,7 +27,6 @@ app.get("/users", async (req, res) => {
     res.status(500).send(error.message);
   }
 });
-
 
 app.get("/users/:id", async (req, res) => {
   try {
@@ -30,7 +38,6 @@ app.get("/users/:id", async (req, res) => {
   }
 });
 
-
 app.post("/users", async (req, res) => {
   try {
     const user = await UserModel.create(req.body);
@@ -40,7 +47,6 @@ app.post("/users", async (req, res) => {
     res.status(500).send(error.message);
   }
 });
-
 
 app.patch("/users/:id", async (req, res) => {
   try {
@@ -53,14 +59,15 @@ app.patch("/users/:id", async (req, res) => {
 });
 
 app.delete("/users/:id", async (req, res) => {
-  try{
-    const id = req.params.id
-    const user = await UserModel.findByIdAndDelete(id)
-    return res.status(202).json(user)
-    
-  }catch {
-    return res.status(500).send(error.message)
+  try {
+    const id = req.params.id;
+    const user = await UserModel.findByIdAndDelete(id);
+    return res.status(202).json(user);
+  } catch {
+    return res.status(500).send(error.message);
   }
-})
+});
 
-app.listen(process.env.PORT, () => console.log(`Express rodando na porta ${process.env.PORT}`));
+app.listen(process.env.PORT, () =>
+  console.log(`Express rodando na porta ${process.env.PORT}`)
+);

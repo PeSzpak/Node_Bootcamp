@@ -1,0 +1,123 @@
+openapi: 3.0.3
+info:
+  title: Node Bootcamp - API de usuários
+  version: 1.0.0
+  description: |
+    API Express + Mongoose de `modules/express.js`. Escrita à mão a partir das rotas.
+    O servidor escuta na porta definida em `PORT`.
+security: []  # a API não tem autenticação
+servers:
+  - url: http://localhost:3000
+paths:
+  /users:
+    get:
+      operationId: listUsers
+      summary: Lista todos os usuários
+      responses:
+        '200':
+          description: Lista de usuários
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/User' }
+        '500': { $ref: '#/components/responses/Error' }
+    post:
+      operationId: createUser
+      summary: Cria um usuário
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UserInput' }
+      responses:
+        '201':
+          description: Usuário criado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '500':
+          $ref: '#/components/responses/Error'
+  /users/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: ObjectId do MongoDB
+        schema: { type: string, example: 665f1c2e9b1e8a0012345678 }
+    get:
+      operationId: getUser
+      summary: Busca um usuário pelo id
+      responses:
+        '200':
+          description: Usuário (ou `null` se o id for válido mas não existir)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '404':
+          $ref: '#/components/responses/Error'
+    patch:
+      operationId: updateUser
+      summary: Atualiza campos de um usuário
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UserPatch' }
+      responses:
+        '200':
+          description: Usuário atualizado (`new true`)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '500': { $ref: '#/components/responses/Error' }
+    delete:
+      operationId: deleteUser
+      summary: Remove um usuário
+      responses:
+        '202':
+          description: Usuário removido (corpo é o documento apagado)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '500': { $ref: '#/components/responses/Error' }
+  /views/users:
+    get:
+      operationId: renderUsersPage
+      summary: Página HTML (EJS) com a lista de usuários
+      responses:
+        '200':
+          description: HTML renderizado de `src/views/index.ejs`
+          content:
+            text/html:
+              schema: { type: string }
+components:
+  responses:
+    Error:
+      description: Mensagem de erro do Mongoose em texto puro
+      content:
+        text/html:
+          schema: { type: string }
+  schemas:
+    UserInput:
+      type: object
+      required: [firstName, lastName, email, password]
+      properties:
+        firstName: { type: string, example: Ana }
+        lastName: { type: string, example: Exemplo }
+        email: { type: string, example: ana@example.com }
+        password: { type: string, example: senha123 }
+    UserPatch:
+      type: object
+      properties:
+        firstName: { type: string }
+        lastName: { type: string }
+        email: { type: string }
+        password: { type: string }
+    User:
+      allOf:
+        - $ref: '#/components/schemas/UserInput'
+        - type: object
+          properties:
+            _id: { type: string, example: 665f1c2e9b1e8a0012345678 }
+            __v: { type: integer, example: 0 }

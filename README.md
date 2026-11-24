@@ -98,6 +98,13 @@ docs/                     # openapi.yaml, coleção Postman, imagem
 
 Não há testes automatizados (`npm test` só imprime a mensagem padrão do npm).
 
+## Limitações conhecidas
+
+- `DELETE /users/:id`: o `catch` não declara `error`, então qualquer falha (ex.: id inválido) vira `ReferenceError` e o Express devolve a página de erro 500 padrão, não a mensagem do Mongoose.
+- `GET /users/:id` com um id válido que não existe responde 200 com `null`.
+- Validação do Mongoose (campo faltando) volta como 500, não 400.
+- O Express começa a escutar antes da conexão com o MongoDB; se a conexão falhar, a API continua no ar e as rotas ficam presas até o timeout do Mongoose.
+
 ## Licença
 
 ISC (campo `license` do `package.json`).
